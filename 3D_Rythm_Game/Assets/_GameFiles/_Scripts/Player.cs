@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 
 public class Player : MonoBehaviour
 {
@@ -11,10 +12,25 @@ public class Player : MonoBehaviour
     public Color _colorGreen;
     public Color _colorPurple;
     public Color _colorYellow;
+
+    public ParticleSystem _flash;
+
+    public GameObject _playerScript;
+
+    public AudioSource _audioSource;
+    public AudioClip _shotClip;
+
+    private int _hp = 2;
+    public Image _hpIcon;
+
+
+    public GameObject _restartPanel;
+    public GameObject _WinPanel;
     void Start()
     {
         _pos = GetComponent<Transform>();
         SetRandomColor();
+        _flash.startColor = _sprite.color;
     }
     void Update()
     {
@@ -27,13 +43,33 @@ public class Player : MonoBehaviour
         if (collision.tag == "ColorChange")
         {
             SetRandomColor();
+            _flash.startColor = _sprite.color;
             Destroy(collision.gameObject);
             return;
         }
-                         
-            if (collision.tag!=_currentColor)
+
+
+        if (collision.tag == "Gem")
+        {
+            Debug.Log("LevelComplate");
+            Destroy(collision.gameObject);
+            _WinPanel.SetActive(true);
+            return;
+        }
+
+        if (collision.tag!=_currentColor)
             {
+            _hp -= 1;
+            _audioSource.PlayOneShot(_shotClip);
+            Instantiate(_flash, new Vector2(transform.position.x, transform.position.y), Quaternion.identity);
+            Destroy(_hpIcon);
+            if (_hp <= 0)
+            {
+                _playerScript.SetActive(false);
+                _restartPanel.SetActive(true);
                 Debug.Log("GAMEOVER!");
+            }
+                
             }
 }
 

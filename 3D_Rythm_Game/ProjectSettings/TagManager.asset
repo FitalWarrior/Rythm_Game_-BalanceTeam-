@@ -9,6 +9,8 @@ TagManager:
   - Purple
   - Yellow
   - ColorChange
+  - Gem
+  - Music
   layers:
   - Default
   - TransparentFX
