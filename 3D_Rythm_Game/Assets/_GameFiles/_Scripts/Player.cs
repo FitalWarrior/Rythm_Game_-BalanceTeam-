@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.UI;
 
 public class Player : MonoBehaviour
@@ -12,6 +14,9 @@ public class Player : MonoBehaviour
     public Color _colorGreen;
     public Color _colorPurple;
     public Color _colorYellow;
+
+    int _gemCount;
+    public Text _gemText;
 
     public ParticleSystem _flash;
 
@@ -31,12 +36,16 @@ public class Player : MonoBehaviour
         _pos = GetComponent<Transform>();
         SetRandomColor();
         _flash.startColor = _sprite.color;
+        LoadGame();
+
+
     }
     void Update()
     {
-        if (Input.GetButtonDown("Jump") || Input.GetMouseButtonDown(0)){_body.velocity = Vector2.up * _jumpForce;        }
+        if (Input.GetButtonDown("Jump") || Input.GetMouseButtonDown(0)) { _body.velocity = Vector2.up * _jumpForce; }
 
-        if (_pos.position.y < -1.5f){_pos.transform.position = new Vector3(0, -1.5f, 0);}
+        if (_pos.position.y < -1.5f) { _pos.transform.position = new Vector3(0, -1.5f, 0); }
+        _gemText.text = _gemCount.ToString();
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -51,14 +60,18 @@ public class Player : MonoBehaviour
 
         if (collision.tag == "Gem")
         {
+            _gemCount += 1;
+            _gemText.text = _gemCount.ToString();
+            SaveGame();
             Debug.Log("LevelComplate");
             Destroy(collision.gameObject);
             _WinPanel.SetActive(true);
+            _audioSource.enabled = false;
             return;
         }
 
-        if (collision.tag!=_currentColor)
-            {
+        if (collision.tag != _currentColor)
+        {
             _hp -= 1;
             _audioSource.PlayOneShot(_shotClip);
             Instantiate(_flash, new Vector2(transform.position.x, transform.position.y), Quaternion.identity);
@@ -69,20 +82,20 @@ public class Player : MonoBehaviour
                 _restartPanel.SetActive(true);
                 Debug.Log("GAMEOVER!");
             }
-                
-            }
-}
 
-    void SetRandomColor() 
+        }
+    }
+
+    void SetRandomColor()
     {
-        int index = Random.Range(0, 4);       
-                   
+        int index = Random.Range(0, 3);
+
         switch (index)
         {
             case 0:
                 _currentColor = "Red";
                 _sprite.color = _colorRed;
-                    break;
+                break;
             case 1:
                 _currentColor = "Green";
                 _sprite.color = _colorGreen;
@@ -97,4 +110,31 @@ public class Player : MonoBehaviour
                 break;
         }
     }
+
+    public void SaveGame()
+    {
+        string key = "GameData";
+        PlayerPrefs.SetInt(key, _gemCount);
+        PlayerPrefs.Save();
+    }
+
+    public void LoadGame()
+    {
+        string key = "GameData";
+        if (PlayerPrefs.HasKey(key))
+        {
+            _gemCount = PlayerPrefs.GetInt(key);
+            PlayerPrefs.Save();
+        }
+
+    }
+
+    private void OnApplicationQuit()
+    {
+        string key = "GameData";
+        PlayerPrefs.SetInt(key,_gemCount);
+        PlayerPrefs.Save();
+    }
+
+
 }
